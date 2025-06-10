@@ -96,7 +96,6 @@ public class Board {
                     GRID_WIDTH, CANVAS_HEIGHT - 1,
                     GRID_WIDTH, GRID_WIDTH);
         }
-
         // Draw all the cells
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLS; ++col) {

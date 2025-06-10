@@ -38,7 +38,7 @@ public enum Seed {   // to save as "Seed.java"
             }
             img = icon.getImage();
         }
-    }
+    }//bismillah bisa
 
     // Public getters
     public String getDisplayName() {

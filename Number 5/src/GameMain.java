@@ -134,4 +134,4 @@ public class GameMain extends JPanel {
             }
         });
     }
-}
+}//bismillah bisa

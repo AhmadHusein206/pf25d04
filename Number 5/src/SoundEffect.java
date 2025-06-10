@@ -66,4 +66,4 @@ public enum SoundEffect {
     static void initGame() {
         values(); // calls the constructor for all the elements
     }
-}
+}//bismillah
