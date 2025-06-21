@@ -18,8 +18,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * For Eclipse, place the audio file under "src", which will be copied into "bin".
  */
 public enum SoundEffect {
-    EAT_FOOD("audio/Cross.wav"),
-    EXPLODE("audio/Bulat.wav"),
+    EAT_FOOD("audio/Bulat.wav"),
+    EXPLODE("audio/Cross.wav"),
     DIE("audio/Final.wav");
 
     /** Nested enumeration for specifying volume */
@@ -66,4 +66,4 @@ public enum SoundEffect {
     static void initGame() {
         values(); // calls the constructor for all the elements
     }
-}//bismillah
+}

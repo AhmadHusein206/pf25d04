@@ -10,12 +10,11 @@ public class GameMain extends JPanel {
 
     // Define named constants for the drawing graphics
     public static final String TITLE = "Tic Tac Toe";
-    public static final Color COLOR_BG = new Color(255, 253, 208);       // Krem
+    public static final Color COLOR_BG = Color.BLACK;
     public static final Color COLOR_BG_STATUS = new Color(216, 216, 216);
-    public static final Color COLOR_CROSS = new Color(255, 255, 0);      // Kuning
-    public static final Color COLOR_NOUGHT = new Color(0, 128, 0);       // Hijau
+    public static final Color COLOR_CROSS = Color.RED;         // Merah
+    public static final Color COLOR_NOUGHT = Color.BLUE;       // Biru
     public static final Font FONT_STATUS = new Font("OCR A Extended", Font.PLAIN, 14);
-
 
 
     // Define game objects
@@ -86,16 +85,14 @@ public class GameMain extends JPanel {
         board = new Board();  // allocate the game-board
     }
 
+
     /** Reset the game-board contents and the current-state, ready for new game */
     public void newGame() {
-        for (int row = 0; row < Board.ROWS; ++row) {
-            for (int col = 0; col < Board.COLS; ++col) {
-                board.cells[row][col].content = Seed.NO_SEED; // all cells empty
-            }
-        }
-        currentPlayer = Seed.CROSS;    // cross plays first
-        currentState = State.PLAYING;  // ready to play
+        board.newGame(); // <-- Reset isi board + garis kemenangan
+        currentPlayer = Seed.CROSS;
+        currentState = State.PLAYING;
     }
+
 
     /** Custom painting codes on this JPanel */
     @Override
