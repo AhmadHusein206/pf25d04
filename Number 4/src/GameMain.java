@@ -124,6 +124,6 @@ public class GameMain extends JPanel {
                 frame.setLocationRelativeTo(null); // center the application window
                 frame.setVisible(true);            // show it
             }
-        });//bismillah
+        });
     }
 }

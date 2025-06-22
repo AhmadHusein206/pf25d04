@@ -12,9 +12,8 @@ public class Board {
 
     Cell[][] cells;
 
-    // Variabel garis kemenangan
-    private int winStartX, winStartY, winEndX, winEndY;
-    private boolean hasWinnerLine = false;
+    private int winStartRow = -1, winStartCol = -1;
+    private int winEndRow = -1, winEndCol = -1;
 
     public Board() {
         initGame();
@@ -35,63 +34,37 @@ public class Board {
                 cells[row][col].newGame();
             }
         }
-        hasWinnerLine = false;
+        winStartRow = winStartCol = winEndRow = winEndCol = -1;
     }
 
     public State stepGame(Seed player, int selectedRow, int selectedCol) {
         cells[selectedRow][selectedCol].content = player;
 
-        // Cek baris
-        if (cells[selectedRow][0].content == player &&
-                cells[selectedRow][1].content == player &&
-                cells[selectedRow][2].content == player) {
-            winStartX = 0;
-            winStartY = selectedRow * Cell.SIZE + Cell.SIZE / 2;
-            winEndX = CANVAS_WIDTH;
-            winEndY = winStartY;
-            hasWinnerLine = true;
+        for (int i = 0; i < 3; i++) {
+            if (cells[i][0].content == player && cells[i][1].content == player && cells[i][2].content == player) {
+                winStartRow = i; winStartCol = 0;
+                winEndRow = i; winEndCol = 2;
+                return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
+            }
+            if (cells[0][i].content == player && cells[1][i].content == player && cells[2][i].content == player) {
+                winStartRow = 0; winStartCol = i;
+                winEndRow = 2; winEndCol = i;
+                return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
+            }
+        }
+
+        if (cells[0][0].content == player && cells[1][1].content == player && cells[2][2].content == player) {
+            winStartRow = 0; winStartCol = 0;
+            winEndRow = 2; winEndCol = 2;
             return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
         }
 
-        // Cek kolom
-        if (cells[0][selectedCol].content == player &&
-                cells[1][selectedCol].content == player &&
-                cells[2][selectedCol].content == player) {
-            winStartX = selectedCol * Cell.SIZE + Cell.SIZE / 2;
-            winStartY = 0;
-            winEndX = winStartX;
-            winEndY = CANVAS_HEIGHT;
-            hasWinnerLine = true;
+        if (cells[0][2].content == player && cells[1][1].content == player && cells[2][0].content == player) {
+            winStartRow = 0; winStartCol = 2;
+            winEndRow = 2; winEndCol = 0;
             return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
         }
 
-        // Cek diagonal utama
-        if (selectedRow == selectedCol &&
-                cells[0][0].content == player &&
-                cells[1][1].content == player &&
-                cells[2][2].content == player) {
-            winStartX = 0;
-            winStartY = 0;
-            winEndX = CANVAS_WIDTH;
-            winEndY = CANVAS_HEIGHT;
-            hasWinnerLine = true;
-            return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
-        }
-
-        // Cek diagonal lawan
-        if (selectedRow + selectedCol == 2 &&
-                cells[0][2].content == player &&
-                cells[1][1].content == player &&
-                cells[2][0].content == player) {
-            winStartX = CANVAS_WIDTH;
-            winStartY = 0;
-            winEndX = 0;
-            winEndY = CANVAS_HEIGHT;
-            hasWinnerLine = true;
-            return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
-        }
-
-        // Cek apakah masih ada cell kosong
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLS; ++col) {
                 if (cells[row][col].content == Seed.NO_SEED) {
@@ -99,7 +72,6 @@ public class Board {
                 }
             }
         }
-
         return State.DRAW;
     }
 
@@ -122,12 +94,16 @@ public class Board {
             }
         }
 
-        // Gambar garis kemenangan jika ada
-        if (hasWinnerLine) {
+        if ((GameMain.getCurrentState() == State.CROSS_WON || GameMain.getCurrentState() == State.NOUGHT_WON)
+                && winStartRow != -1) {
+            g.setColor(Color.RED);
+            int x1 = winStartCol * Cell.SIZE + Cell.SIZE / 2;
+            int y1 = winStartRow * Cell.SIZE + Cell.SIZE / 2;
+            int x2 = winEndCol * Cell.SIZE + Cell.SIZE / 2;
+            int y2 = winEndRow * Cell.SIZE + Cell.SIZE / 2;
             Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.RED);
-            g2.setStroke(new BasicStroke(6));
-            g2.drawLine(winStartX, winStartY, winEndX, winEndY);
+            g2.setStroke(new BasicStroke(5));
+            g2.drawLine(x1, y1, x2, y2);
         }
     }
 }
