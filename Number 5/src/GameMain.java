@@ -24,16 +24,35 @@ public class GameMain extends JPanel {
     private boolean vsComputer = true;
     private String aiDifficulty = "Easy";
 
+    private static final int AI_DELAY_MS = 1000; // 1 detik delay
+    private Timer aiTimer;
+    private boolean isAIThinking = false;
+
     private int scoreX = 0;
     private int scoreO = 0;
+    private String playerXName = "Player X";
+    private String playerOName = "Player O";
+    private boolean twoPlayers = false;
 
     public GameMain() {
+        showPlayerSelectionDialog();
+
         super.setLayout(new BorderLayout());
+
+        // Inisialisasi timer untuk AI
+        aiTimer = new Timer(AI_DELAY_MS, e -> {
+            if (isAIThinking) {
+                makeAIMove();
+                isAIThinking = false;
+                repaint();
+            }
+        });
+        aiTimer.setRepeats(false); // Hanya eksekusi sekali
 
         super.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (currentState == State.PLAYING) {
+                if (currentState == State.PLAYING && !isAIThinking) {
                     int mouseX = e.getX();
                     int mouseY = e.getY();
                     int row = mouseY / Cell.SIZE;
@@ -46,11 +65,13 @@ public class GameMain extends JPanel {
                         updateScoreIfNeeded();
                         repaint();
 
-                        if (currentState == State.PLAYING && vsComputer && currentPlayer == Seed.CROSS) {
-                            currentPlayer = Seed.NOUGHT;
-                            makeAIMove();
-                        } else if (currentState == State.PLAYING) {
+                        if (currentState == State.PLAYING) {
                             currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+
+                            if (vsComputer && currentPlayer == Seed.NOUGHT) {
+                                isAIThinking = true;
+                                aiTimer.start();
+                            }
                         }
                     }
                 } else {
@@ -94,6 +115,61 @@ public class GameMain extends JPanel {
         newGame();
     }
 
+    private void showPlayerSelectionDialog() {
+        JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
+
+        JRadioButton singlePlayerBtn = new JRadioButton("Single Player (vs Computer)", true);
+        JRadioButton twoPlayerBtn = new JRadioButton("Two Players");
+        ButtonGroup group = new ButtonGroup();
+        group.add(singlePlayerBtn);
+        group.add(twoPlayerBtn);
+
+        JLabel player1Label = new JLabel("Player X Name:");
+        JTextField player1Field = new JTextField("Player 1");
+
+        JLabel player2Label = new JLabel("Player O Name:");
+        JTextField player2Field = new JTextField("Computer");
+        player2Field.setEnabled(false);
+
+        singlePlayerBtn.addItemListener(e -> {
+            vsComputer = true;
+            twoPlayers = false;
+            player2Field.setEnabled(false);
+            player2Field.setText("Computer");
+        });
+
+        twoPlayerBtn.addItemListener(e -> {
+            vsComputer = false;
+            twoPlayers = true;
+            player2Field.setEnabled(true);
+            player2Field.setText("Player 2");
+        });
+
+
+        panel.add(singlePlayerBtn);
+        panel.add(twoPlayerBtn);
+        panel.add(player1Label);
+        panel.add(player1Field);
+        panel.add(player2Label);
+        panel.add(player2Field);
+
+        int result = JOptionPane.showConfirmDialog(
+                null,
+                panel,
+                "Player Setup",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            playerXName = player1Field.getText().trim();
+            playerOName = player2Field.getText().trim();
+
+            if (playerXName.isEmpty()) playerXName = "Player X";
+            if (playerOName.isEmpty()) playerOName = twoPlayers ? "Player O" : "Computer";
+        }
+    }
+
     public void initGame() {
         board = new Board();
     }
@@ -102,19 +178,18 @@ public class GameMain extends JPanel {
         board.newGame();
         currentPlayer = Seed.CROSS;
         currentState = State.PLAYING;
+        isAIThinking = false; // Reset status AI
+        aiTimer.stop(); // Hentikan timer jika ada
     }
 
     private void makeAIMove() {
-        int[] move = null;
-        move = getRandomMove();
-
+        int[] move = getRandomMove();
         currentState = board.stepGame(Seed.NOUGHT, move[0], move[1]);
         updateScoreIfNeeded();
 
         if (currentState == State.PLAYING) {
             currentPlayer = Seed.CROSS;
         }
-        repaint();
     }
 
     private int[] getRandomMove() {
@@ -138,21 +213,26 @@ public class GameMain extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         setBackground(COLOR_BG);
-        board.paint(g);
+        board.paintComponent(g);
 
         if (currentState == State.PLAYING) {
-            statusBar.setForeground(Color.WHITE);
-            statusBar.setText((currentPlayer == Seed.CROSS ? "X's Turn" : "O's Turn") +
-                    " | Score: X = " + scoreX + ", O = " + scoreO);
+            statusBar.setForeground(Color.BLACK);
+            String turnText = (currentPlayer == Seed.CROSS) ?
+                    playerXName + "'s Turn" : playerOName + "'s Turn";
+            statusBar.setText(turnText + " | Score: " + playerXName + " = " + scoreX +
+                    ", " + playerOName + " = " + scoreO);
         } else if (currentState == State.DRAW) {
             statusBar.setForeground(Color.RED);
-            statusBar.setText("It's a Draw! Click to play again. | Score: X = " + scoreX + ", O = " + scoreO);
+            statusBar.setText("It's a Draw! Click to play again. | Score: " +
+                    playerXName + " = " + scoreX + ", " + playerOName + " = " + scoreO);
         } else if (currentState == State.CROSS_WON) {
             statusBar.setForeground(Color.RED);
-            statusBar.setText("'X' Won! Click to play again. | Score: X = " + scoreX + ", O = " + scoreO);
+            statusBar.setText(playerXName + " Won! Click to play again. | Score: " +
+                    playerXName + " = " + scoreX + ", " + playerOName + " = " + scoreO);
         } else if (currentState == State.NOUGHT_WON) {
             statusBar.setForeground(Color.RED);
-            statusBar.setText("'O' Won! Click to play again. | Score: X = " + scoreX + ", O = " + scoreO);
+            statusBar.setText(playerOName + " Won! Click to play again. | Score: " +
+                    playerXName + " = " + scoreX + ", " + playerOName + " = " + scoreO);
         }
     }
 

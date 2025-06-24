@@ -32,8 +32,13 @@ public class Cell {
         // Draw the Seed if it is not empty
         int x1 = col * SIZE + PADDING;
         int y1 = row * SIZE + PADDING;
-        if (content == Seed.CROSS || content == Seed.NOUGHT) {
-            g.drawImage(content.getImage(), x1, y1, SEED_SIZE, SEED_SIZE, null);
+        if (content == Seed.CROSS) {
+            g.setColor(Color.RED);
+            g.drawLine(x1, y1, x1 + SEED_SIZE, y1 + SEED_SIZE);
+            g.drawLine(x1 + SEED_SIZE, y1, x1, y1 + SEED_SIZE);
+        } else if (content == Seed.NOUGHT) {
+            g.setColor(Color.BLUE);
+            g.drawOval(x1, y1, SEED_SIZE, SEED_SIZE);
         }
     }
 }//bismillah bisa

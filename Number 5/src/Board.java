@@ -1,6 +1,7 @@
 import java.awt.*;
+import javax.swing.*;
 
-public class Board {
+class Board extends JPanel {
     public static final int ROWS = 3;
     public static final int COLS = 3;
     public static final int CANVAS_WIDTH = Cell.SIZE * COLS;
@@ -8,7 +9,6 @@ public class Board {
     public static final int GRID_WIDTH = 8;
     public static final int GRID_WIDTH_HALF = GRID_WIDTH / 2;
     public static final Color COLOR_GRID = Color.LIGHT_GRAY;
-    public static final int Y_OFFSET = 1;
 
     Cell[][] cells;
 
@@ -16,6 +16,7 @@ public class Board {
     private int winEndRow = -1, winEndCol = -1;
 
     public Board() {
+        setPreferredSize(new Dimension(Cell.SIZE * COLS, Cell.SIZE * ROWS));
         initGame();
     }
 
@@ -40,19 +41,16 @@ public class Board {
     public State stepGame(Seed player, int selectedRow, int selectedCol) {
         cells[selectedRow][selectedCol].content = player;
 
-        for (int i = 0; i < 3; i++) {
-            if (cells[i][0].content == player && cells[i][1].content == player && cells[i][2].content == player) {
-                winStartRow = i; winStartCol = 0;
-                winEndRow = i; winEndCol = 2;
-                return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
-            }
-            if (cells[0][i].content == player && cells[1][i].content == player && cells[2][i].content == player) {
-                winStartRow = 0; winStartCol = i;
-                winEndRow = 2; winEndCol = i;
+        // Check columns for win
+        for (int col = 0; col < COLS; col++) {
+            if (cells[0][col].content == player && cells[1][col].content == player && cells[2][col].content == player) {
+                winStartRow = 0; winStartCol = col;
+                winEndRow = 2; winEndCol = col;
                 return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
             }
         }
 
+        // check diagonal
         if (cells[0][0].content == player && cells[1][1].content == player && cells[2][2].content == player) {
             winStartRow = 0; winStartCol = 0;
             winEndRow = 2; winEndCol = 2;
@@ -60,11 +58,14 @@ public class Board {
         }
 
         if (cells[0][2].content == player && cells[1][1].content == player && cells[2][0].content == player) {
-            winStartRow = 0; winStartCol = 2;
-            winEndRow = 2; winEndCol = 0;
+            winStartRow = 0;
+            winStartCol = 2;
+            winEndRow = 2;
+            winEndCol = 0;
             return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
         }
 
+        // check draw
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLS; ++col) {
                 if (cells[row][col].content == Seed.NO_SEED) {
@@ -75,16 +76,20 @@ public class Board {
         return State.DRAW;
     }
 
-    public void paint(Graphics g) {
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        // Draw grid
         g.setColor(COLOR_GRID);
         for (int row = 1; row < ROWS; ++row) {
             g.fillRoundRect(0, Cell.SIZE * row - GRID_WIDTH_HALF,
-                    CANVAS_WIDTH - 1, GRID_WIDTH,
+                    Cell.SIZE * COLS - 1, GRID_WIDTH,
                     GRID_WIDTH, GRID_WIDTH);
         }
         for (int col = 1; col < COLS; ++col) {
-            g.fillRoundRect(Cell.SIZE * col - GRID_WIDTH_HALF, 0 + Y_OFFSET,
-                    GRID_WIDTH, CANVAS_HEIGHT - 1,
+            g.fillRoundRect(Cell.SIZE * col - GRID_WIDTH_HALF, 0,
+                    GRID_WIDTH, Cell.SIZE * ROWS - 1,
                     GRID_WIDTH, GRID_WIDTH);
         }
 
