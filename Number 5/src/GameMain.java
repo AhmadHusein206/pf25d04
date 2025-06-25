@@ -30,9 +30,14 @@ public class GameMain extends JPanel {
 
     private int scoreX = 0;
     private int scoreO = 0;
+    private int drawScore = 0;
     private String playerXName = "Player X";
     private String playerOName = "Player O";
     private boolean twoPlayers = false;
+
+    private int maxRounds = 1;
+    private int roundsPlayed = 0;
+    private boolean gameOver = false;
 
     public GameMain() {
         showPlayerSelectionDialog();
@@ -62,10 +67,22 @@ public class GameMain extends JPanel {
                             && board.cells[row][col].content == Seed.NO_SEED) {
 
                         currentState = board.stepGame(currentPlayer, row, col);
+
+                        if (currentState != State.PLAYING && currentState != State.DRAW) {
+                            roundsPlayed++;
+                        }
+
                         updateScoreIfNeeded();
                         repaint();
 
-                        if (currentState == State.PLAYING) {
+                        if (currentState != State.PLAYING) {
+                            if (roundsPlayed >= maxRounds) {
+                                gameOver = true;
+                                showFinalResult();
+                            } else {
+                                showNextRoundDialog(getRoundResultMessage());
+                            }
+                        } else {
                             currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
 
                             if (vsComputer && currentPlayer == Seed.NOUGHT) {
@@ -74,23 +91,14 @@ public class GameMain extends JPanel {
                             }
                         }
                     }
-                } else {
-                    newGame();
-                    repaint();
                 }
             }
         });
 
-        statusBar = new JLabel();
-        statusBar.setFont(FONT_STATUS);
-        statusBar.setBackground(COLOR_BG_STATUS);
-        statusBar.setOpaque(true);
-        statusBar.setPreferredSize(new Dimension(300, 30));
-        statusBar.setHorizontalAlignment(JLabel.LEFT);
-        statusBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 12));
-
         restartButton = new JButton("Restart");
         restartButton.addActionListener(e -> {
+            showPlayerSelectionDialog();
+            initGame();
             newGame();
             repaint();
         });
@@ -98,22 +106,95 @@ public class GameMain extends JPanel {
         difficultySelect = new JComboBox<>(new String[]{"Easy"});
         difficultySelect.addActionListener(e -> aiDifficulty = (String) difficultySelect.getSelectedItem());
 
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        controlPanel.add(new JLabel("AI Difficulty:"));
-        controlPanel.add(difficultySelect);
-        controlPanel.add(restartButton);
-
-        bottomPanel.add(statusBar, BorderLayout.CENTER);
-        bottomPanel.add(controlPanel, BorderLayout.EAST);
-        super.add(bottomPanel, BorderLayout.PAGE_END);
-
-        super.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 30));
-        super.setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2, false));
+        setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT));
+        setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2, false));
 
         initGame();
         newGame();
     }
+
+    private void showNextRoundDialog(String message) {
+        int response = JOptionPane.showOptionDialog(this,
+                message + "\nKlik NEXT untuk menuju ronde berikutnya.",
+                "Ronde Selesai",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                new String[]{"NEXT"},
+                "NEXT");
+        if (response == 0) {
+            newGame();
+            repaint();
+        }
+    }
+
+    private String getRoundResultMessage() {
+        if (currentState == State.CROSS_WON) {
+            return playerXName + " menang ronde ini!";
+        } else if (currentState == State.NOUGHT_WON) {
+            return playerOName + " menang ronde ini!";
+        } else {
+            return "Ronde ini berakhir tanpa pemenang.";
+        }
+    }
+
+    private void showFinalResult() {
+        String resultMessage;
+        if (scoreX > scoreO) {
+            resultMessage = playerXName + " menang pertandingan!";
+        } else if (scoreO > scoreX) {
+            resultMessage = playerOName + " menang pertandingan!";
+        } else {
+            int response = JOptionPane.showConfirmDialog(this,
+                    "Skor akhir imbang. Apakah ingin menambah 1 ronde penentu?",
+                    "Ronde Tambahan",
+                    JOptionPane.YES_NO_OPTION);
+            if (response == JOptionPane.YES_OPTION) {
+                maxRounds++;
+                gameOver = false;
+                newGame();
+                repaint();
+                return;
+            } else {
+                resultMessage = "Pertandingan berakhir seri!";
+            }
+        }
+
+        JOptionPane.showMessageDialog(this,
+                "Permainan selesai!\n\nSkor akhir:\n" +
+                        playerXName + ": " + scoreX + "\n" +
+                        playerOName + ": " + scoreO + "\n\n" + resultMessage,
+                "Hasil Akhir",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public JPanel getControlPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panel.add(new JLabel("AI Difficulty:"));
+        panel.add(difficultySelect);
+        panel.add(restartButton);
+        return panel;
+    }
+
+    public void setStatusBar(JLabel statusBar) {
+        this.statusBar = statusBar;
+    }
+//        JPanel bottomPanel = new JPanel(new BorderLayout());
+//        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+//        controlPanel.add(new JLabel("AI Difficulty:"));
+//        controlPanel.add(difficultySelect);
+//        controlPanel.add(restartButton);
+//
+//        bottomPanel.add(statusBar, BorderLayout.CENTER);
+//        bottomPanel.add(controlPanel, BorderLayout.EAST);
+//        super.add(bottomPanel, BorderLayout.PAGE_END);
+//
+//        super.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 30));
+//        super.setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2, false));
+//
+//        initGame();
+//        newGame();
+//    }
 
     private void showPlayerSelectionDialog() {
         JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
@@ -168,10 +249,29 @@ public class GameMain extends JPanel {
             if (playerXName.isEmpty()) playerXName = "Player X";
             if (playerOName.isEmpty()) playerOName = twoPlayers ? "Player O" : "Computer";
         }
+
+    String inputRounds = JOptionPane.showInputDialog(
+            null,
+            "Berapa poin maksimal dalam game?",
+            "Poin maksimal",
+            JOptionPane.QUESTION_MESSAGE
+    );
+
+        try {
+        maxRounds = Integer.parseInt(inputRounds);
+        if (maxRounds <= 0) maxRounds = 1;
+    } catch (Exception e) {
+        maxRounds = 1;
     }
+}
 
     public void initGame() {
         board = new Board();
+        roundsPlayed = 0;
+        scoreX = 0;
+        scoreO = 0;
+        drawScore = 0;
+        gameOver = false;
     }
 
     public void newGame() {
@@ -185,10 +285,22 @@ public class GameMain extends JPanel {
     private void makeAIMove() {
         int[] move = getRandomMove();
         currentState = board.stepGame(Seed.NOUGHT, move[0], move[1]);
+
+        if (currentState != State.PLAYING && currentState != State.DRAW) {
+            roundsPlayed++;
+        }
+
         updateScoreIfNeeded();
 
         if (currentState == State.PLAYING) {
             currentPlayer = Seed.CROSS;
+        } else {
+            if (roundsPlayed >= maxRounds) {
+                gameOver = true;
+                showFinalResult();
+            } else {
+                showNextRoundDialog(getRoundResultMessage());
+            }
         }
     }
 
@@ -214,27 +326,9 @@ public class GameMain extends JPanel {
         super.paintComponent(g);
         setBackground(COLOR_BG);
         board.paintComponent(g);
-
-        if (currentState == State.PLAYING) {
-            statusBar.setForeground(Color.BLACK);
-            String turnText = (currentPlayer == Seed.CROSS) ?
-                    playerXName + "'s Turn" : playerOName + "'s Turn";
-            statusBar.setText(turnText + " | Score: " + playerXName + " = " + scoreX +
-                    ", " + playerOName + " = " + scoreO);
-        } else if (currentState == State.DRAW) {
-            statusBar.setForeground(Color.RED);
-            statusBar.setText("It's a Draw! Click to play again. | Score: " +
-                    playerXName + " = " + scoreX + ", " + playerOName + " = " + scoreO);
-        } else if (currentState == State.CROSS_WON) {
-            statusBar.setForeground(Color.RED);
-            statusBar.setText(playerXName + " Won! Click to play again. | Score: " +
-                    playerXName + " = " + scoreX + ", " + playerOName + " = " + scoreO);
-        } else if (currentState == State.NOUGHT_WON) {
-            statusBar.setForeground(Color.RED);
-            statusBar.setText(playerOName + " Won! Click to play again. | Score: " +
-                    playerXName + " = " + scoreX + ", " + playerOName + " = " + scoreO);
-        }
     }
+
+
 
     public static State getCurrentState() {
         return currentState;
@@ -243,9 +337,30 @@ public class GameMain extends JPanel {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame(TITLE);
-            frame.setContentPane(new GameMain());
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.pack();
+            frame.setLayout(new BorderLayout());
+
+            GameMain gamePanel = new GameMain();
+
+            JLabel statusBar = new JLabel("Have Fun!");
+            statusBar.setFont(FONT_STATUS);
+            statusBar.setBackground(COLOR_BG_STATUS);
+            statusBar.setOpaque(true);
+            statusBar.setPreferredSize(new Dimension(300, 30));
+            statusBar.setHorizontalAlignment(JLabel.LEFT);
+            statusBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 12));
+
+            gamePanel.setStatusBar(statusBar);
+
+            JPanel bottomPanel = new JPanel(new BorderLayout());
+            bottomPanel.add(gamePanel.getControlPanel(), BorderLayout.EAST);
+            bottomPanel.add(statusBar, BorderLayout.CENTER);
+
+            frame.add(gamePanel, BorderLayout.CENTER);
+            frame.add(bottomPanel, BorderLayout.SOUTH);
+
+            frame.setSize(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 70);
+            frame.setResizable(false);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });

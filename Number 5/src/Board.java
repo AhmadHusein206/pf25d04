@@ -41,6 +41,15 @@ class Board extends JPanel {
     public State stepGame(Seed player, int selectedRow, int selectedCol) {
         cells[selectedRow][selectedCol].content = player;
 
+        for (int row = 0; row < ROWS; row++) {
+            if (cells[row][0].content == player && cells[row][1].content == player && cells[row][2].content == player) {
+                winStartRow = row; winStartCol = 0;
+                winEndRow = row; winEndCol = 2;
+                return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
+            }
+        }
+
+
         // Check columns for win
         for (int col = 0; col < COLS; col++) {
             if (cells[0][col].content == player && cells[1][col].content == player && cells[2][col].content == player) {
