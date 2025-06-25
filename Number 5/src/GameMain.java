@@ -179,22 +179,6 @@ public class GameMain extends JPanel {
     public void setStatusBar(JLabel statusBar) {
         this.statusBar = statusBar;
     }
-//        JPanel bottomPanel = new JPanel(new BorderLayout());
-//        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-//        controlPanel.add(new JLabel("AI Difficulty:"));
-//        controlPanel.add(difficultySelect);
-//        controlPanel.add(restartButton);
-//
-//        bottomPanel.add(statusBar, BorderLayout.CENTER);
-//        bottomPanel.add(controlPanel, BorderLayout.EAST);
-//        super.add(bottomPanel, BorderLayout.PAGE_END);
-//
-//        super.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 30));
-//        super.setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2, false));
-//
-//        initGame();
-//        newGame();
-//    }
 
     private void showPlayerSelectionDialog() {
         JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
