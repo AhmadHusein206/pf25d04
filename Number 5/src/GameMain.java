@@ -270,7 +270,7 @@ public class GameMain extends JPanel {
         int[] move = getRandomMove();
         currentState = board.stepGame(Seed.NOUGHT, move[0], move[1]);
 
-        if (currentState != State.PLAYING && currentState != State.DRAW) {
+        if (currentState != State.PLAYING ) {
             roundsPlayed++;
         }
 
