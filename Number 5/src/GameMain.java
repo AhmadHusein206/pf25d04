@@ -68,7 +68,7 @@ public class GameMain extends JPanel {
 
                         currentState = board.stepGame(currentPlayer, row, col);
 
-                        if (currentState != State.PLAYING && currentState != State.DRAW) {
+                        if (currentState != State.PLAYING ) {
                             roundsPlayed++;
                         }
 
@@ -236,8 +236,8 @@ public class GameMain extends JPanel {
 
     String inputRounds = JOptionPane.showInputDialog(
             null,
-            "Berapa poin maksimal dalam game?",
-            "Poin maksimal",
+            "Mau main berapa ronde?",
+            "Ronde maksimal",
             JOptionPane.QUESTION_MESSAGE
     );
 
