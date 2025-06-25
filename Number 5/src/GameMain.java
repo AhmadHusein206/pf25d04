@@ -359,7 +359,7 @@ public class GameMain extends JPanel {
             frame.add(gamePanel, BorderLayout.CENTER);
             frame.add(bottomPanel, BorderLayout.SOUTH);
 
-            frame.setSize(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 70);
+            frame.setSize(Board.CANVAS_WIDTH + 13, Board.CANVAS_HEIGHT + 70);
             frame.setResizable(false);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
